@@ -34,6 +34,13 @@ defmodule FSModEvent.Connection do
 
   @typep t :: %FSModEvent.Connection{}
 
+  @heartbeat 10_000
+  def handle_cast(:heartbeat, state) do
+    Process.send_after(self(), {:"$gen_cast", :heartbeat}, @heartbeat)
+    Logger.debug(inspect state)
+    {:noreply, state}
+  end
+
   @doc """
   Registers the caller process as a receiver for all the events for which the
   filter_fun returns true.
@@ -310,6 +317,9 @@ defmodule FSModEvent.Connection do
       state: :connecting,
       jobs: %{}
     }}
+
+    Process.send_after(self(), {:"$gen_cast", :heartbeat}, @heartbeat)
+
   end
 
   @spec handle_call(
